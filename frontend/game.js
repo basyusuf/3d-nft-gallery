@@ -1,6 +1,22 @@
 class Game {
-    constructor() {
-        if (!Detector.webgl) Detector.addGetWebGLMessage();
+    constructor(nft_urls) {
+        if (!Detector.webgl) {
+            Detector.addGetWebGLMessage();
+        }
+
+        this.nft_urls = [];
+        if (nft_urls && Array.isArray(nft_urls) && nft_urls.length > 0) {
+            this.nft_urls = nft_urls;
+        } else {
+            this.nft_urls = [
+                "https://lh3.googleusercontent.com/cK0w9r2irX2yqYeGs9A8OXctYnnHWtNj64MWepVOZ8MMYC6weWgm3EDS08Qbn6SH-sCSuYLUPItla8GypJ5VpFZayVFCyPUSHG8VyQ=s0",
+                "https://lh3.googleusercontent.com/POesFfbLX3KLQVs6ezfRM8AlQzZLlF9rvmdR5FURUt5IsBCwpw_LN6lqoeUrIoVI5dVDjpviUdDgLsmz7oOph7vB3pxpX1aJytLI=w600",
+                "https://lh3.googleusercontent.com/mB8GEPDGpiQ-95KlN3vinfwZi-5PWux_KypDP0iqvaHznsVMdxtw83txE99yU1wfWqEsJ_fpFcFzvR_3WHsjytEMTx8a0ZQret-HkAk=w600",
+                "https://lh3.googleusercontent.com/iQpf_Q3NgdG8WRamqYxcXmMQMFUAb1q7VhAoq-0jRNTEksV63qa_Xzl3HOyGml1fToI0DFutaoi98fu56ioFtf2JZFPPDsmk5RcTAFo=w600",
+                "https://lh3.googleusercontent.com/lzSuK-eerb8HzmIyynjouf44IjK_-MtCv899Q0uYwfiHBq690U3LdFH4Tu5W-Ka1hOt8Vxca7BS0F-RRE4UfZzXXXGO0J-vh9SPsbg=w600"
+            ]
+        }
+
 
         this.container;
         this.player = {};
@@ -67,13 +83,12 @@ class Game {
         const loader = new THREE.FBXLoader();
         const game = this;
 
-        loader.load(`${this.assetsPath}fbx/people/FireFighter.fbx`, function (object) {
-
+        loader.load(`${this.assetsPath}fbx/people/Punk.fbx`, function (object) {
             object.mixer = new THREE.AnimationMixer(object);
             game.player.mixer = object.mixer;
             game.player.root = object.mixer.getRoot();
 
-            object.name = "FireFighter";
+            object.name = "User";
 
             object.traverse(function (child) {
                 if (child.isMesh) {
@@ -82,8 +97,14 @@ class Game {
                 }
             });
 
+            let punks = [
+                "SimplePeople_Punk_Black.png",
+                "SimplePeople_Punk_Brown.png",
+                "SimplePeople_Punk_White.png"
+            ]
+
             const tLoader = new THREE.TextureLoader();
-            tLoader.load(`${game.assetsPath}images/SimplePeople_FireFighter_Brown.png`, function (texture) {
+            tLoader.load(`${game.assetsPath}images/${punks[Math.floor((Math.random() * punks.length))]}`, function (texture) {
                 object.traverse(function (child) {
                     if (child.isMesh) {
                         child.material.map = texture;
@@ -130,14 +151,20 @@ class Game {
     }
 
     createColliders() {
+        THREE.ImageUtils.crossOrigin = '';
+
         const geometry = new THREE.BoxGeometry(500, 400, 500);
-        const material = new THREE.MeshBasicMaterial({ color: 0x222222, wireframe: true });
+
 
         this.colliders = [];
 
         for (let x = -5000; x < 5000; x += 1000) {
             for (let z = -5000; z < 5000; z += 1000) {
-                if (x == 0 && z == 0) continue;
+                if (x == 0 && z == 0) {
+                    continue
+                };
+                const mapOverlay = THREE.ImageUtils.loadTexture(this.nft_urls[Math.floor(Math.random() * this.nft_urls.length)]);
+                const material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false, map: mapOverlay });
                 const box = new THREE.Mesh(geometry, material);
                 box.position.set(x, 250, z);
                 this.scene.add(box);
@@ -145,8 +172,10 @@ class Game {
             }
         }
 
-        const geometry2 = new THREE.BoxGeometry(1000, 40, 1000);
-        const stage = new THREE.Mesh(geometry2, material);
+        const start_geometry = new THREE.BoxGeometry(1000, 40, 1000);
+        const start_image = THREE.ImageUtils.loadTexture('./assets/images/start_here.png');
+        const start_material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false, map: start_image });
+        const stage = new THREE.Mesh(start_geometry, start_material);
         stage.position.set(0, 20, 0);
         this.colliders.push(stage);
         this.scene.add(stage);
@@ -341,8 +370,6 @@ class Game {
             this.sun.position.z = this.player.object.position.z + 100;
             this.sun.target = this.player.object;
         }
-
         this.renderer.render(this.scene, this.camera);
-
     }
 }

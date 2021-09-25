@@ -1,2 +1,8 @@
 # 3D NFT Gallery
-3D NFT Gallery Art
+<div style="text-align:center">
+    <img alt="Qries" src="./project_detail.gif">
+</div>
+### Setup
+- Clone project
+- cd/backend && npm install && npm run start
+- go localhost:3000 on browser
