@@ -1,10 +1,18 @@
+/**
+* it is an experimental project :)
+* reference: https://www.udemy.com/course/create-a-3d-multi-player-game-using-threejs-and-socketio/
+*/
+
+
 class Game {
     constructor(nft_urls) {
+        //WebGL Kontrolü gerçekleştiriyoruz.
         if (!Detector.webgl) {
             Detector.addGetWebGLMessage();
         }
 
         this.nft_urls = [];
+        //Constructor tarafından nft url listesi gelirse onları kullan
         if (nft_urls && Array.isArray(nft_urls) && nft_urls.length > 0) {
             this.nft_urls = nft_urls;
         } else {
@@ -21,16 +29,17 @@ class Game {
         this.container;
         this.player = {};
         this.animations = {};
-        this.stats;
         this.camera;
         this.scene;
         this.renderer;
 
+        //Uygulama için alan oluşturuluyor
         this.container = document.createElement('div');
         this.container.style.height = '100%';
         document.body.appendChild(this.container);
 
         const game = this;
+        //Animasyon listesi. assets/fbx/anims içersinde bulunmalılar.
         this.anims = ['Walking', 'Walking Backwards', 'Turn', 'Running', 'Pointing Gesture'];
 
         this.assetsPath = '../assets/';
@@ -39,6 +48,7 @@ class Game {
 
         this.init();
 
+        //herhangi bir hata durumuna consola erroru basalım
         window.onError = function (error) {
             console.error(JSON.stringify(error));
         }
@@ -68,7 +78,7 @@ class Game {
         this.scene.add(light);
         this.sun = light;
 
-        // ground
+        // yer
         var mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(10000, 10000), new THREE.MeshPhongMaterial({ color: 0x999999, depthWrite: false }));
         mesh.rotation.x = - Math.PI / 2;
         mesh.receiveShadow = true;
@@ -83,6 +93,7 @@ class Game {
         const loader = new THREE.FBXLoader();
         const game = this;
 
+        //Modeli yükleyelim
         loader.load(`${this.assetsPath}fbx/people/Punk.fbx`, function (object) {
             object.mixer = new THREE.AnimationMixer(object);
             game.player.mixer = object.mixer;
@@ -103,6 +114,7 @@ class Game {
                 "SimplePeople_Punk_White.png"
             ]
 
+            //Modele uyumlu olan texture giyilmesini sağlıyoruz
             const tLoader = new THREE.TextureLoader();
             tLoader.load(`${game.assetsPath}images/${punks[Math.floor((Math.random() * punks.length))]}`, function (texture) {
                 object.traverse(function (child) {
@@ -152,9 +164,7 @@ class Game {
 
     createColliders() {
         THREE.ImageUtils.crossOrigin = '';
-
         const geometry = new THREE.BoxGeometry(500, 400, 500);
-
 
         this.colliders = [];
 
@@ -163,6 +173,7 @@ class Game {
                 if (x == 0 && z == 0) {
                     continue
                 };
+                //nft url listesinden random şekilde resimi secip kutuları kaplıyoruz
                 const mapOverlay = THREE.ImageUtils.loadTexture(this.nft_urls[Math.floor(Math.random() * this.nft_urls.length)]);
                 const material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false, map: mapOverlay });
                 const box = new THREE.Mesh(geometry, material);
@@ -172,6 +183,7 @@ class Game {
             }
         }
 
+        //Başlangıç alanı için bir geometrik cisim oluşturuyoruz. Start here resmiyle kaplıyoruz.
         const start_geometry = new THREE.BoxGeometry(1000, 40, 1000);
         const start_image = THREE.ImageUtils.loadTexture('./assets/images/start_here.png');
         const start_material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false, map: start_image });
